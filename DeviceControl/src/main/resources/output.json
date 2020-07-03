@@ -1,0 +1,52 @@
+{
+    "UserID": 1000,
+    "RequestID": 1,
+    "RequestType": 2, 
+    "VMDList": [9876],
+    "Data": {
+        "MessageName":"dynamic message testing",
+        "Duration": "10",
+        "Category": "1",
+        "PagesData": [
+            {
+                "Duration": 10,
+                "TextRects": [
+                    {
+                        "Top":4,
+                        "Left": 3,
+                        "Width": 47,
+                        "Height": 14,
+                        "FontSize": 8,
+                        "FontName": "Tahoma",
+                        "Effect": "none",
+                        "LineData": [
+                            {
+                                "UnicodeText": "\\u0054\\u0061\\u0068\\u006F\\u006D\\u0061",
+                                "Text": "Tahoma"
+                            }
+                        ],
+                        "BackgroundColor": "rgb(0,0,0)",
+                        "ForegroundColor": "rgb(255,255,255)"
+                    }
+                ],
+                "ImageRects": [
+                    {
+                    "Path": "" ,
+                    "Top": 0,
+                    "Left": 0,
+                    "Width": 45,
+                    "Height": 48
+                }
+            ],
+                "VideoRects": [{
+                    "Path": "" ,
+                    "Top": 0,
+                    "Left": 0,
+                    "Width": 45,
+                    "Height": 48
+                }]
+            }
+        ],
+        "IsDefault": true
+    }
+}

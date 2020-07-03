@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       https://camel.apache.org/schema/spring/camel-spring.xsd">
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <propertyPlaceholder id="properties" location="classpath:/application.properties"/>
+        <route id="vmd-route">
+            <from id="_from1" uri="netty-http:http://localhost:8081/variableMessageBoard/sendVmbMessage"/>
+            <convertBodyTo id="_convertBodyTo1" type="String"/>
+            <setProperty id="_setProperty1" propertyName="PAYLOAD">
+                <simple>body</simple>
+            </setProperty>
+            <log id="_log1" message=">>>>input ${body}"/>
+            <setHeader headerName="vendorCode" id="_setHeader1">
+                <jsonpath suppressExceptions="true">$.vendorCode</jsonpath>
+            </setHeader>
+            <log id="_log5" message="Header name: vendorCode -> ${header.vendorCode}"/>
+            <setHeader headerName="mode" id="_setHeader2">
+                <jsonpath suppressExceptions="true">$.mode</jsonpath>
+            </setHeader>
+            <log id="_log2" message="Header name: mode -> ${header.mode}"/>
+            <choice id="_choice7">
+                <when id="_when9">
+                    <jsonpath>$.vms_id[*]</jsonpath>
+                    <setHeader headerName="vms_id" id="_setHeader15">
+                        <jsonpath suppressExceptions="true">$.vms_id[*]</jsonpath>
+                    </setHeader>
+                </when>
+                <otherwise id="_otherwise7">
+                    <setHeader headerName="vms_id" id="_setHeader16">
+                        <jsonpath suppressExceptions="true">$.vms_id</jsonpath>
+                    </setHeader>
+                </otherwise>
+            </choice>
+            <log id="_log8" message="Header name: vms_id -> ${header.vms_id}"/>
+            <setHeader headerName="vms_idup" id="_setHeader4">
+                <simple>[${header.vms_id}]</simple>
+            </setHeader>
+            <log id="_log9" message="Header name: vms_idup -> ${header.vms_idup}"/>
+            <setHeader headerName="mediaType" id="_setHeader5">
+                <jsonpath suppressExceptions="true">$.mediaType</jsonpath>
+            </setHeader>
+            <log id="_log10" message="Header name: mediaType -> ${header.mediaType}"/>
+            <setHeader headerName="text" id="_setHeader9">
+                <jsonpath suppressExceptions="true">$.[*].message</jsonpath>
+            </setHeader>
+            <log id="_log15" message="Header name: text -> ${header.text}"/>
+            <setHeader headerName="media" id="_setHeader14">
+                <jsonpath suppressExceptions="true">$.[*].filepath</jsonpath>
+            </setHeader>
+            <log id="_log42" message="Header name: media -> ${header.media}"/>
+            <choice id="_choice1">
+                <when id="_when1">
+                    <simple>${header.vendorCode} contains "EFF"</simple>
+                    <log id="_log3" message="EFF logger"/>
+                    <choice id="_choice2">
+                        <when id="_when2">
+                            <simple>${header.mode} contains "online"</simple>
+                            <log id="_log6" message="online logger"/>
+                            <choice id="_choice3">
+                                <when id="_when3">
+                                    <simple>${header.mediaType} contains "video"</simple>
+                                    <log id="_log11" message="video logger"/>
+                                    <setBody id="_setBody1">
+                                    <simple>{"UserID": 1000,"RequestID": 1,"RequestType": 2,"VMDList": ${header.vms_idup},"Data":{"MessageName":"","Duration": "10","Category": "1","PagesData":[{"Duration": 10, "TextRects":[{"Top":4,"Left": 3,"Width": 47,"Height": 14,"FontSize": 8,"FontName": "Tahoma","Effect": "none","LineData":[{ "UnicodeText": "\\u0054\\u0061\\u0068\\u006F\\u006D\\u0061","Text": "Tahoma"}],"BackgroundColor": "rgb(0,0,0)","ForegroundColor": "rgb(255,255,255)"}],"ImageRects":[{"Path": "","Top": 0,"Left": 0,"Width": 45,"Height": 48}],"VideoRects":[{"Path": "${header.media}","Top": 0,"Left": 0,"Width": 45,"Height": 48}]}], "IsDefault": true}}</simple>
+                                    </setBody>
+                                    <log id="_log35" message="sending api payload : >>> ${body}"/>
+                                    <setHeader
+                                    headerName="Authorization" id="_setHeader12">
+                                    <simple>Basic Vk1ELUlDQ0MtVVNFUjpWTUQtSUNDQy1VU0VSQDEyMw==</simple>
+                                    </setHeader>
+                                    <to id="_to3" uri="netty-http:http://{{remote.host}}:{{remote.port}}/InstantMessage"/>
+                                    <convertBodyTo id="_convertBodyTo2" type="String"/>
+                                    <log id="_log17" message="after API : ${body}"/>
+                                    <setProperty id="_setProperty4" propertyName="PAYLOAD41">
+                                    <simple>${body}</simple>
+                                    </setProperty>
+                                    <log id="_log36" message="property resp: ${property.PAYLOAD41}"/>
+                                    <setHeader headerName="response11" id="_setHeader13">
+                                    <jsonpath>$.IsSuccess</jsonpath>
+                                    </setHeader>
+                                    <log id="_log37" message="response logger : ${header.response11} "/>
+                                    <choice id="_choice6">
+                                    <when id="_when8">
+                                    <simple>${header.response11} == true</simple>
+                                    <log id="_log38" message="success logger"/>
+                                    <setBody id="_setBody10">
+                                    <simple>{"status":true,"message":"message published successfully","vendorResponse": ${property.PAYLOAD41}}</simple>
+                                    </setBody>
+                                    <log id="_log40" message="Display response: ${body}"/>
+                                    </when>
+                                    <otherwise id="_otherwise6">
+                                    <log id="_log39" message="failed logger"/>
+                                    <setBody id="_setBody11">
+                                    <simple>{"status":false,"message":"message publishing is unsuccessfull","vendorResponse": ${property.PAYLOAD41}}</simple>
+                                    </setBody>
+                                    <log id="_log41" message="Display response: ${body}"/>
+                                    </otherwise>
+                                    </choice>
+                                </when>
+                                <when id="_when4">
+                                    <simple>${header.mediaType} contains "image"</simple>
+                                    <log id="_log12" message="image logger"/>
+                                    <setBody id="_setBody2">
+                                    <simple>{"UserID": 1000,"RequestID": 1,"RequestType": 2,"VMDList": ${header.vms_idup},"Data": {"MessageName":"","Duration": "10","Category": "1","PagesData": [{"Duration": 10,"TextRects":[{"Top":4,"Left": 3,"Width": 47,"Height": 14,"FontSize": 8,"FontName": "Tahoma","Effect": "none","LineData":[{"UnicodeText":"\\u0054\\u0061\\u0068\\u006F\\u006D\\u0061","Text": "Tahoma"}],"BackgroundColor": "rgb(0,0,0)","ForegroundColor":"rgb(255,255,255)"}],"ImageRects":[{"Path": "${header.media}","Top": 0,"Left": 0,"Width": 45,"Height": 48}],"VideoRects":[{"Path": "","Top": 0,"Left": 0,"Width": 45,"Height": 48}]}],"IsDefault": true}}</simple>
+                                    </setBody>
+                                    <log id="_log28" message="sending api payload : >>> ${body}"/>
+                                    <setHeader
+                                    headerName="Authorization" id="_setHeader7">
+                                    <simple>Basic Vk1ELUlDQ0MtVVNFUjpWTUQtSUNDQy1VU0VSQDEyMw==</simple>
+                                    </setHeader>
+                                    <to id="_to2" uri="netty-http:http://{{remote.host}}:{{remote.port}}/InstantMessage"/>
+                                    <convertBodyTo id="_convertBodyTo3" type="String"/>
+                                    <log id="_log18" message="after API : ${body}"/>
+                                    <setProperty id="_setProperty3" propertyName="PAYLOAD31">
+                                    <simple>${body}</simple>
+                                    </setProperty>
+                                    <log id="_log27" message="property resp: ${property.PAYLOAD31}"/>
+                                    <setHeader headerName="response22" id="_setHeader11">
+                                    <jsonpath>$.IsSuccess</jsonpath>
+                                    </setHeader>
+                                    <log id="_log29" message="response logger : ${header.response22} "/>
+                                    <choice id="_choice5">
+                                    <when id="_when6">
+                                    <simple>${header.response22} == true</simple>
+                                    <log id="_log30" message="success logger"/>
+                                    <setBody id="_setBody7">
+                                    <simple>{"status":true,"message":"message published successfully","vendorResponse": ${property.PAYLOAD31}}</simple>
+                                    </setBody>
+                                    <log id="_log31" message="Display response: ${body}"/>
+                                    </when>
+                                    <otherwise id="_otherwise5">
+                                    <log id="_log32" message="failed logger"/>
+                                    <setBody id="_setBody8">
+                                    <simple>{"status":false,"message":"message publishing is unsuccessfull","vendorResponse": ${property.PAYLOAD31}}</simple>
+                                    </setBody>
+                                    <log id="_log33" message="Display response: ${body}"/>
+                                    </otherwise>
+                                    </choice>
+                                </when>
+                                <when id="_when7">
+                                    <simple>${header.mediaType} contains "text"</simple>
+                                    <log id="_log13" message="text logger"/>
+                                    <setBody id="_setBody3">
+                                    <simple>{"UserID": 1000,"RequestID": 1,"RequestType": 2, "VMDList": ${header.vms_idup},"Data": {"MessageName": "${header.text}","Duration": "10","Category": "1","PagesData": [{"Duration": 10,"TextRects":[{"Top":4,"Left": 3,"Width": 47,"Height": 14,"FontSize": 8,"FontName": "Tahoma","Effect": "none","LineData": [{"UnicodeText": "\\u0054\\u0061\\u0068\\u006F\\u006D\\u0061","Text": "Tahoma"}],"BackgroundColor": "rgb(0,0,0)","ForegroundColor": "rgb(255,255,255)"}],"ImageRects": [{"Path": "" ,"Top": 0,"Left": 0,"Width": 45,"Height": 48}],"VideoRects": [{"Path": "" ,"Top": 0,"Left": 0,"Width": 45,"Height": 48}]}],"IsDefault": true}}</simple>
+                                    </setBody>
+                                    <log id="_log14" message="sending api payload : >>> ${body}"/>
+                                    <setHeader
+                                    headerName="Authorization" id="_setHeader8">
+                                    <simple>Basic Vk1ELUlDQ0MtVVNFUjpWTUQtSUNDQy1VU0VSQDEyMw==</simple>
+                                    </setHeader>
+                                    <to id="_to1" uri="netty-http:http://{{remote.host}}:{{remote.port}}/InstantMessage"/>
+                                    <convertBodyTo id="_convertBodyTo4" type="String"/>
+                                    <log id="_log19" message="after API : ${body}"/>
+                                    <setProperty id="_setProperty31" propertyName="PAYLOAD21">
+                                    <simple>${body}</simple>
+                                    </setProperty>
+                                    <log id="_log261" message="property resp: ${property.PAYLOAD21}"/>
+                                    <setHeader headerName="response33" id="_setHeader101">
+                                    <jsonpath suppressExceptions="true">$.IsSuccess</jsonpath>
+                                    </setHeader>
+                                    <log id="_log231" message="response logger : ${header.response33} "/>
+                                    <choice id="_choice41">
+                                    <when id="_when51">
+                                    <simple>${header.response33} == true</simple>
+                                    <log id="_log161" message="success logger"/>
+                                    <setBody id="_setBody51">
+                                    <simple>{"status":true,"message":"message published successfully","vendorResponse": ${property.PAYLOAD21}}</simple>
+                                    </setBody>
+                                    <log id="_log241" message="Display response: ${body}"/>
+                                    </when>
+                                    <otherwise id="_otherwise41">
+                                    <log id="_log201" message="failed logger"/>
+                                    <setBody id="_setBody61">
+                                    <simple>{"status":false,"message":"message publishing is unsuccessfull","vendorResponse": ${property.PAYLOAD21}}</simple>
+                                    </setBody>
+                                    <log id="_log251" message="Display response: ${body}"/>
+                                    </otherwise>
+                                    </choice>
+                                </when>
+                                <otherwise id="_otherwise3">
+                                    <setBody id="_setBody9">
+                                    <simple>{"status":false,"message":"Media Type Not Found"}</simple>
+                                    </setBody>
+                                    <log id="_log34" message="default response: >>> ${body}"/>
+                                </otherwise>
+                            </choice>
+                        </when>
+                        <otherwise id="_otherwise2">
+                            <log id="_log7" message="offline logger"/>
+                            <setBody id="_setBody4">
+                                <simple>{"UserID": 1000,"RequestID": 1,"RequestType": 2, "VMDList": ${header.vms_idup},"Data": {"MessageName": "${header.text}"}}</simple>
+                            </setBody>
+                            <log id="_log21" message="sending api payload : >>> ${body}"/>
+                            <setHeader headerName="Authorization" id="_setHeader6">
+                                <simple>Basic Vk1ELUlDQ0MtVVNFUjpWTUQtSUNDQy1VU0VSQDEyMw==</simple>
+                            </setHeader>
+                            <to id="_to4" uri="netty-http:http://{{remote.host}}:{{remote.port}}/DisplayMessage"/>
+                            <convertBodyTo id="_convertBodyTo5" type="String"/>
+                            <log id="_log22" message="after API : ${body}"/>
+                            <setProperty id="_setProperty2" propertyName="PAYLOAD2">
+                                <simple>${body}</simple>
+                            </setProperty>
+                            <log id="_log26" message="property resp: ${property.PAYLOAD2}"/>
+                            <setHeader headerName="response44" id="_setHeader10">
+                                <jsonpath suppressExceptions="true">$.IsSuccess</jsonpath>
+                            </setHeader>
+                            <log id="_log23" message="response logger : ${header.response44} "/>
+                            <choice id="_choice4">
+                                <when id="_when5">
+                                    <simple>${header.response44} == true</simple>
+                                    <log id="_log16" message="success logger"/>
+                                    <setBody id="_setBody5">
+                                    <simple>{"status":true,"message":"message published successfully","vendorResponse": ${property.PAYLOAD2}}</simple>
+                                    </setBody>
+                                    <log id="_log24" message="Display response: ${body}"/>
+                                </when>
+                                <otherwise id="_otherwise4">
+                                    <log id="_log20" message="failed logger"/>
+                                    <setBody id="_setBody6">
+                                    <simple>{"status":false,"message":"message publishing is unsuccessfull","vendorResponse": ${property.PAYLOAD2}}</simple>
+                                    </setBody>
+                                    <log id="_log25" message="Display response: ${body}"/>
+                                </otherwise>
+                            </choice>
+                        </otherwise>
+                    </choice>
+                </when>
+                <otherwise id="_otherwise1">
+                    <setBody id="_setBody12">
+                        <simple>invalid vendorCode</simple>
+                    </setBody>
+                    <log id="_log4" message="error code: ${body}"/>
+                </otherwise>
+            </choice>
+        </route>
+    </camelContext>
+</beans>

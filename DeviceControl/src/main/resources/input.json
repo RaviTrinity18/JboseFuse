@@ -1,0 +1,22 @@
+{
+  "tenantCode": "TN-5640",
+  "vendorCode": "VNX",
+  "vms_id": 9055,
+  "vendorId": 1,
+  "mode": "online",
+  "mediaType": "video",
+  "text": {
+    "message": "********************Welcome to Chennai Smart City*************",
+    "fontColor": "#00ffff",
+    "fontSize": 15
+  },
+  "media": {
+    "filepath": "http://techslides.com/demos/sample-videos/small.mp4",
+    "extra_params": {
+      "startdate": "2020-06-13 00:00:00",
+      "enddate": "2020-06-14 10:00:00",
+      "duration": 3000,
+      "searchFileName" : "video.MP4"
+    }
+  }
+}
